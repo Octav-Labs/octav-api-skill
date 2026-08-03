@@ -51,7 +51,7 @@ Otherwise use `/v1/*` with a Bearer token, and mention x402 exists if one of tho
 | `/v1/portfolio/at-block` | GET | Add-on + 1 credit | Portfolio valued at a historical block (Ethereum) |
 | `/v1/virtual-users` | GET | 1 credit | List virtual users (Pro) |
 | `/v1/virtual-users/portfolio` | GET | 1 credit/address | Virtual user holdings (Pro) |
-| `/v1/nav` | GET | 1 credit | Net Asset Value (simple number) |
+| `/v1/nav` | GET | 1 credit | Net Asset Value — `{nav, currency, conversionPrice}` |
 | `/v1/wallet` | GET | 1 credit | Wallet token balances, excludes DeFi positions |
 | `/v1/transactions` | GET | 1 credit | Transaction history with filtering |
 | `/v1/approvals/{chain}` | GET | 1 credit | ERC-20 token approval records |
@@ -74,7 +74,7 @@ Subscribe Snapshot (POST, 1200 credits) enables daily portfolio snapshots for an
 |----------|--------|------|-------------|
 | `/v1/agent/portfolio` | GET | 0.025 USDC | Wallet and protocol holdings |
 | `/v1/agent/wallet` | GET | 0.025 USDC | Wallet holdings only |
-| `/v1/agent/nav` | GET | 0.025 USDC | Net Asset Value |
+| `/v1/agent/nav` | GET | 0.025 USDC | Net Asset Value — `{nav, currency, conversionPrice}` |
 | `/v1/agent/status` | GET | 0.025 USDC | Sync status |
 | `/v1/agent/chains` | GET | 0.025 USDC | Supported chains |
 
@@ -119,15 +119,23 @@ const portfolio = await response.json();
 
 ### Nav (Net Asset Value)
 
-Get simple net worth number.
+Get net worth as a single value, optionally converted to another currency.
 
 ```javascript
 const response = await fetch(
-  `https://api.octav.fi/v1/nav?addresses=${address}`,
+  `https://api.octav.fi/v1/nav?addresses=${address}&currency=USD`,
   { headers: { 'Authorization': `Bearer ${apiKey}` } }
 );
-const nav = await response.json(); // Returns: 1235564.43434
+const { nav, currency, conversionPrice } = await response.json();
+// { "nav": 1235564.43, "currency": "USD", "conversionPrice": 1 }
 ```
+
+**Parameters:**
+- `addresses` (required): EVM or Solana address
+- `currency`: Fiat `USD` (default), `EUR`, `CAD`, `AED`, `CHF`, `SGD`; crypto `ETH`, `SOL`, `cbBTC`, `EURC`, `BNB`
+- `waitForSync`: Wait for fresh data if stale (default: false)
+
+`conversionPrice` is the rate used — for fiat, the exchange rate from USD; for crypto, the weighted average USD price across the queried wallets.
 
 ### Transactions
 
