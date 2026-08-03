@@ -17,6 +17,9 @@ This skill teaches AI agents how to use the Octav API to:
 - Monitor DeFi protocol positions (Aave, Uniswap, etc.)
 - Access historical portfolio snapshots
 - Analyze token distribution and holdings
+- Pay per request as an autonomous agent via x402, when appropriate
+
+It covers all 25 REST endpoints and instructs agents to default to the API-key REST API, reaching for the [x402 endpoints](https://docs.octav.fi/api/endpoints/agent-x402) only when the user asks for pay-per-call or the agent holds a wallet and no API key.
 
 ## Get an API key
 
