@@ -1,7 +1,7 @@
 ---
 name: octav-api
 description: |
-  Integrate with Octav API for cryptocurrency portfolio tracking, transaction history, and DeFi analytics across 65+ blockchain networks. Use when building applications that need to: (1) Track wallet balances and net worth across multiple chains, (2) Query transaction history with filtering and search, (3) Monitor DeFi protocol positions (Aave, Uniswap, etc.), (4) Access historical portfolio snapshots, (5) Analyze token distribution and holdings, (6) Pay per request as an autonomous agent via x402. Triggers on: "Octav API", "crypto portfolio API", "blockchain portfolio tracking", "DeFi analytics API", "wallet balance API", "transaction history API", "multi-chain portfolio", "Octav x402".
+  Integrate with Octav API for cryptocurrency portfolio tracking, transaction history, and DeFi analytics across 50+ blockchain networks. Use when building applications that need to: (1) Track wallet balances and net worth across multiple chains, (2) Query transaction history with filtering and search, (3) Monitor DeFi protocol positions (Aave, Uniswap, etc.), (4) Access historical portfolio snapshots, (5) Analyze token distribution and holdings, (6) Pay per request as an autonomous agent via x402. Triggers on: "Octav API", "crypto portfolio API", "blockchain portfolio tracking", "DeFi analytics API", "wallet balance API", "transaction history API", "multi-chain portfolio", "Octav x402".
 license: MIT
 metadata:
   author: Octav-Labs

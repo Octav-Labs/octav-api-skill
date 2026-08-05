@@ -1,6 +1,6 @@
 # Octav API Skill
 
-Agent skill for integrating with the [Octav API](https://octav.fi) — cryptocurrency portfolio tracking, transaction history, and DeFi analytics across 65+ blockchain networks.
+Agent skill for integrating with the [Octav API](https://octav.fi) — cryptocurrency portfolio tracking, transaction history, and DeFi analytics across 50+ blockchain networks.
 
 ## Install
 
