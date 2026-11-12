@@ -96,7 +96,7 @@ const portfolio = await response.json();
 ```
 
 **Parameters:**
-- `addresses` (required): EVM or Solana address. Comma-separate multiple addresses in one request to save credits.
+- `addresses` (required): One EVM or Solana address. The endpoint takes one address per call; a comma-separated list returns `400 Multiple addresses not supported yet`.
 - `includeImages`: Include asset/protocol image URLs (default: false)
 - `includeExplorerUrls`: Include block explorer URLs (default: false)
 - `waitForSync`: Wait for fresh data if stale (default: false)
@@ -131,8 +131,8 @@ const { nav, currency, conversionPrice } = await response.json();
 ```
 
 **Parameters:**
-- `addresses` (required): EVM or Solana address
-- `currency`: Fiat `USD` (default), `EUR`, `CAD`, `AED`, `CHF`, `SGD`; crypto `ETH`, `SOL`, `cbBTC`, `EURC`, `BNB`
+- `addresses` (required): EVM or Solana address. Up to 50 comma-separated addresses (`?addresses=0x123,0x456`) return their combined NAV, 1 credit per address
+- `currency`: Fiat `USD` (default), `EUR`, `CAD`, `AED`, `CHF`, `SGD`; crypto `ETH`, `SOL`, `cbBTC`, `EURC`, `BNB`, `WHYPE`. Case-sensitive
 - `waitForSync`: Wait for fresh data if stale (default: false)
 
 `conversionPrice` is the rate used — for fiat, the exchange rate from USD; for crypto, the weighted average USD price across the queried wallets.
@@ -146,7 +146,7 @@ const params = new URLSearchParams({
   addresses: '0x...',
   limit: '50',
   offset: '0',
-  sort: 'DESC',
+  sort: 'NEWEST',
   hideSpam: 'true'
 });
 
@@ -157,12 +157,12 @@ const response = await fetch(
 ```
 
 **Required parameters:**
-- `addresses`: Wallet address(es)
+- `addresses`: One wallet address per call
 - `limit`: Results per page (1-250)
 - `offset`: Pagination offset
 
 **Optional filters:**
-- `sort`: `DESC` (newest) or `ASC` (oldest)
+- `sort`: `NEWEST` (default) or `OLDEST`. Other values such as `ASC`/`DESC` are ignored and return newest first
 - `networks`: Chain filter (e.g., `ethereum,arbitrum,base`)
 - `txTypes`: Transaction type filter (e.g., `SWAP,DEPOSIT`)
 - `protocols`: Protocol filter (e.g., `uniswap_v3,aave_v3`)
@@ -315,7 +315,7 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
 
 ## Cost Optimization
 
-1. **Batch addresses:** comma-separate them in one request — `?addresses=0x123,0x456,0x789` — to save credits versus one call each
+1. **One address per call:** every address costs 1 credit, batched or not. Only `/v1/nav` and `/v1/virtual-users/portfolio` accept a comma-separated list (up to 50); the other wallet endpoints take one address
 2. **Use free endpoints:** `/v1/status`, `/v1/credits`, `/v1/chains`, and `/v1/chains/{chainKey}/protocols` cost nothing
 3. **Filter on server:** Use `networks`, `txTypes` params vs client filtering
 4. **Cache results:** Portfolio cached 1 minute, transactions 10 minutes
@@ -325,12 +325,30 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
 
 ### Multi-wallet portfolio
 
+Portfolio takes one address per call, so fetch each wallet (1 credit each):
+
 ```javascript
 const addresses = ['0x123...', '0x456...', '0x789...'];
+const portfolios = await Promise.all(
+  addresses.map(async (address) => {
+    const response = await fetch(
+      `https://api.octav.fi/v1/portfolio?addresses=${address}`,
+      { headers: { 'Authorization': `Bearer ${apiKey}` } }
+    );
+    const [portfolio] = await response.json();
+    return portfolio;
+  })
+);
+```
+
+For the combined net worth alone, one `/v1/nav` call takes up to 50 addresses:
+
+```javascript
 const response = await fetch(
-  `https://api.octav.fi/v1/portfolio?addresses=${addresses.join(',')}`,
+  `https://api.octav.fi/v1/nav?addresses=${addresses.join(',')}`,
   { headers: { 'Authorization': `Bearer ${apiKey}` } }
 );
+const { nav } = await response.json();
 ```
 
 ### Paginated transaction fetch
@@ -343,10 +361,10 @@ async function getAllTransactions(address) {
 
   while (true) {
     const response = await fetch(
-      `https://api.octav.fi/v1/transactions?addresses=${address}&limit=${limit}&offset=${offset}&sort=DESC`,
+      `https://api.octav.fi/v1/transactions?addresses=${address}&limit=${limit}&offset=${offset}&sort=NEWEST`,
       { headers: { 'Authorization': `Bearer ${apiKey}` } }
     );
-    const batch = await response.json();
+    const { transactions: batch } = await response.json();
     if (batch.length === 0) break;
     transactions.push(...batch);
     offset += batch.length;
